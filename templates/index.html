@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torres de Hanói</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Torres de Hanói</h1>
+        <form action="/solve" method="post">
+            <label for="num_discos">Digite o número de discos:</label>
+            <input type="number" id="num_discos" name="num_discos" min="1" required>
+            <button type="submit">Calcular</button>
+        </form>
+        <div id="game">
+            <canvas id="hanoiCanvas" width="600" height="400"></canvas>
+        </div>
+        {% if movimentos %}
+        <h2>Resultado</h2>
+        <p>Número mínimo de movimentos: {{ numero_movimentos }}</p>
+        <h3>Sequência de movimentos:</h3>
+        <ul>
+            {% for movimento in movimentos %}
+            <li>{{ movimento }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+    <div class="author-section">
+        <p>Projeto desenvolvido por <strong>Anónio Manuel Domingos Solipa</strong>.</p>
+    </div>
+
+    <script>
+        const movimentos = {{ movimentos|tojson }};
+        let currentMove = 0;
+
+        function drawTowers(towers) {
+            const canvas = document.getElementById('hanoiCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < 3; i++) {
+                ctx.fillStyle = 'gray';
+                ctx.fillRect(150 + 200 * i, 100, 10, 200);
+                ctx.fillRect(100 + 200 * i, 300, 100, 10);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < towers[i].length; j++) {
+                    let disk = towers[i][j];
+                    ctx.fillStyle = 'blue';
+                    ctx.fillRect(150 + 200 * i - disk * 10, 300 - 20 * j - 10, disk * 20, 20);
+                }
+            }
+        }
+
+        function nextMove() {
+            if (currentMove >= movimentos.length) return;
+            const [origem, destino] = movimentos[currentMove];
+            towers[destino].push(towers[origem].pop());
+            drawTowers(towers);
+            currentMove++;
+            setTimeout(nextMove, 500);
+        }
+
+        let towers = [[], [], []];
+        for (let i = {{ num_discos }}; i > 0; i--) {
+            towers[0].push(i);
+        }
+        drawTowers(towers);
+        setTimeout(nextMove, 500);
+    </script>
+</body>
+</html>
