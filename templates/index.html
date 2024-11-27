@@ -14,16 +14,18 @@
             <input type="number" id="num_discos" name="num_discos" min="1" required>
             <button type="submit">Calcular</button>
         </form>
+
         <div id="game">
             <canvas id="hanoiCanvas" width="600" height="400"></canvas>
         </div>
+
         {% if movimentos %}
         <h2>Resultado</h2>
-        <p>Número mínimo de movimentos: {{ numero_movimentos }}</p>
+        <p>Número mínimo de movimentos: {{ movimentos|length }}</p>
         <h3>Sequência de movimentos:</h3>
         <ul>
             {% for movimento in movimentos %}
-            <li>{{ movimento }}</li>
+            <li>Mover disco da torre {{ movimento[0] + 1 }} para a torre {{ movimento[1] + 1 }}</li>
             {% endfor %}
         </ul>
         {% endif %}
@@ -35,42 +37,59 @@
 
     <script>
         const movimentos = {{ movimentos|tojson }};
+        const numDiscos = {{ num_discos|tojson }};
         let currentMove = 0;
-
-        function drawTowers(towers) {
+    
+        // Torres de Hanói no início
+        let towers = [[], [], []];
+        for (let i = numDiscos; i > 0; i--) {
+            towers[0].push(i);
+        }
+    
+        function drawTowers() {
             const canvas = document.getElementById('hanoiCanvas');
             const ctx = canvas.getContext('2d');
+            const towerWidth = 10;
+            const baseWidth = 100;
+            const towerSpacing = 185;
+            const towerHeight = 200;
+            const diskHeight = Math.min(20, Math.floor(towerHeight / numDiscos)); // Calcula a altura de cada disco dinamicamente
+    
+            // Limpa o canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    
+            // Desenha torres e bases
             for (let i = 0; i < 3; i++) {
+                const x = 150 + towerSpacing * i;
                 ctx.fillStyle = 'gray';
-                ctx.fillRect(150 + 200 * i, 100, 10, 200);
-                ctx.fillRect(100 + 200 * i, 300, 100, 10);
+                ctx.fillRect(x, 100, towerWidth, towerHeight); // Torre
+                ctx.fillRect(x - 50, 300, baseWidth, 10); // Base
             }
-
+    
+            // Desenha discos
             for (let i = 0; i < 3; i++) {
+                const towerX = 150 + towerSpacing * i;
                 for (let j = 0; j < towers[i].length; j++) {
-                    let disk = towers[i][j];
+                    const disk = towers[i][j];
+                    const diskWidth = disk * 20;
+                    const diskX = towerX - diskWidth / 2;
+                    const diskY = 300 - (j + 1) * diskHeight; // Corrige a altura para não ultrapassar os limites
                     ctx.fillStyle = 'blue';
-                    ctx.fillRect(150 + 200 * i - disk * 10, 300 - 20 * j - 10, disk * 20, 20);
+                    ctx.fillRect(diskX, diskY, diskWidth, diskHeight);
                 }
             }
         }
-
+    
         function nextMove() {
             if (currentMove >= movimentos.length) return;
             const [origem, destino] = movimentos[currentMove];
             towers[destino].push(towers[origem].pop());
-            drawTowers(towers);
+            drawTowers();
             currentMove++;
             setTimeout(nextMove, 500);
         }
-
-        let towers = [[], [], []];
-        for (let i = {{ num_discos }}; i > 0; i--) {
-            towers[0].push(i);
-        }
-        drawTowers(towers);
+    
+        drawTowers();
         setTimeout(nextMove, 500);
     </script>
 </body>

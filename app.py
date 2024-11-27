@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -6,14 +6,14 @@ def hanoi(n, origem, destino, intermediario, movimentos):
     if n == 1:
         movimentos.append((origem, destino))
     else:
-        hanoi(n-1, origem, intermediario, destino, movimentos)
+        hanoi(n - 1, origem, intermediario, destino, movimentos)
         movimentos.append((origem, destino))
-        hanoi(n-1, intermediario, destino, origem, movimentos)
+        hanoi(n - 1, intermediario, destino, origem, movimentos)
     return movimentos
 
 @app.route('/')
 def index():
-    return render_template('index.html', movimentos=[])
+    return render_template('index.html', movimentos=[], num_discos=0)
 
 @app.route('/solve', methods=['POST'])
 def solve():
